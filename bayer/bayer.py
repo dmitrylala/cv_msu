@@ -135,7 +135,7 @@ def improved_interpolation(raw_img: np.ndarray) -> np.ndarray:
     new_img[:, :, 2] = convolve(raw_img, weights[:, :, 2]) * mask_r + convolve(raw_img, weights[:, :, 0]) * \
         mask_g1 + convolve(raw_img, weights[:, :, 1]) * mask_g2 + raw_img * mask_b
 
-    return (255 * new_img).astype(np.int32).clip(0, 255).astype(np.uint8)
+    return np.clip((255 * new_img).astype(np.int32), 0, 255).astype(np.uint8)
 
 
 def compute_psnr(img_pred: np.ndarray, img_gt: np.ndarray) -> float:
