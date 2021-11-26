@@ -1,21 +1,45 @@
 import numpy as np
 from scipy.ndimage import convolve
 
+from typing import Tuple
 
-def get_bayer_masks(n_rows, n_cols):
+
+def get_bayer_masks(n_rows: int, n_cols: int) -> np.ndarray:
+    """
+    Получение масок трех цветовых каналов по шаблону байера
+    :param n_rows: высота масок
+    :param n_cols: ширина масок
+
+    :return: маски указанных размеров
+    """
+    if n_rows <= 0 or n_cols <= 0:
+        raise ValueError(f"Bad masks sizes: {n_rows}, {n_cols}")
+
     red = np.array([[i % 2 == 1 and j % 2 == 0 for i in range(n_cols)] for j in range(n_rows)])
     green = np.array([[i % 2 == j % 2 for i in range(n_cols)] for j in range(n_rows)])
     blue = np.array([[i % 2 == 0 and j % 2 == 1 for i in range(n_cols)] for j in range(n_rows)])
     return np.stack([red, green, blue], axis=2)
 
 
-def get_colored_img(raw_img):
+def get_colored_img(raw_img: np.ndarray) -> np.ndarray:
+    """
+    Получение из одноканального изображения трехканального с неизвестными значениями, используя маски байера
+    :param raw_img: исходное изображение в градациях серого
+
+    :return: rgb-представление изображения, полученное с помощью масок
+    """
     bayer_masks = get_bayer_masks(*raw_img.shape)
     color_components = [raw_img * bayer_masks[:, :, k] for k in range(3)]
     return np.stack(color_components, axis=2)
 
 
-def bilinear_interpolation(colored_img):
+def bilinear_interpolation(colored_img: np.ndarray) -> np.ndarray:
+    """
+    Нахождение неизвестных значений с помощью билинейной интерполяции (граничные пиксели игнорируются)
+    :param colored_img: цветное изображение с неизвестными значениями, согласно байеровскому шаблону
+
+    :return: восстановленное изображение
+    """
     n_rows, n_cols = colored_img.shape[:2]
     bayer_masks = get_bayer_masks(n_rows, n_cols)
     new_img = np.array(colored_img, dtype=np.float32)
@@ -32,7 +56,17 @@ def bilinear_interpolation(colored_img):
     return new_img.astype(np.uint8)
 
 
-def get_improved_masks(n_rows, n_cols):
+def get_improved_masks(n_rows: int, n_cols: int) -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Получение масок трех цветовых каналов по предложенному в статье шаблону
+    :param n_rows: высота масок
+    :param n_cols: ширина масок
+
+    :return: маски указанных размеров
+    """
+    if n_rows <= 0 or n_cols <= 0:
+        raise ValueError(f"Bad masks sizes: {n_rows}, {n_cols}")
+
     masks = get_bayer_masks(n_rows, n_cols)
     mask_r = masks[:, :, 0]
     mask_g1 = np.array([[i % 2 == j % 2 == 1 for i in range(n_cols)] for j in range(n_rows)])
@@ -41,7 +75,12 @@ def get_improved_masks(n_rows, n_cols):
     return mask_r, mask_g1, mask_g2, mask_b
 
 
-def get_improved_weights():
+def get_improved_weights() -> Tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Получение весов пикселей в масках по предложенному в статье шаблону
+
+    :return: веса для масок
+    """
     weight0 = np.array(
         [
             [0, 0, 1 / 2, 0, 0],
@@ -77,7 +116,13 @@ def get_improved_weights():
     return np.stack([weight0, weight1, weight2, weight3], axis=2)
 
 
-def improved_interpolation(raw_img):
+def improved_interpolation(raw_img: np.ndarray) -> np.ndarray:
+    """
+    Реализация улучшенной линейной интерполяции согласно предложенному в статье алгоритму
+    :param raw_img: исходное изображение в градациях серого
+
+    :return: трехканальное изображение - результат интерполяции
+    """
     raw_img = raw_img.astype(np.float64) / 255
     new_img = np.zeros(raw_img.shape + (3,), dtype=np.float64)
 
@@ -93,7 +138,14 @@ def improved_interpolation(raw_img):
     return (255 * new_img).astype(np.int32).clip(0, 255).astype(np.uint8)
 
 
-def compute_psnr(img_pred, img_gt):
+def compute_psnr(img_pred: np.ndarray, img_gt: np.ndarray) -> float:
+    """
+    Вычисление метрики PSNR
+    :param img_pred: результат работы алгоритма интеполяции
+    :param img_gt: эталонное изображение
+
+    :return: значение метрики
+    """
     img_pred = img_pred.astype(np.float64)
     img_gt = img_gt.astype(np.float64)
     mse = ((img_pred - img_gt) ** 2).mean()
