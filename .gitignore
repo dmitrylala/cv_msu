@@ -139,3 +139,4 @@ cython_debug/
 
 # Other
 description.pdf
+build.sh
