@@ -23,3 +23,17 @@ python main.py (command) (input_image_path) (output_image_path)
 * bilinear
 * improved
 * psnr
+
+### Юнит-тесты
+Также проводилось юнит-тестирование функций:
+~~~
+./run.py unittest (unittest_name)
+~~~
+Список юнит-тестов:
+* masks
+* colored_img
+* bilinear
+* bilinear_img
+* improved
+* improved_img
+* psnr
