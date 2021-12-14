@@ -1,7 +1,7 @@
 # Совмещение каналов изображения
 
 Программа выполняет совмещение изображений, полученных с фотопластинок Прокудина-Горского. Пример совмещения в папке [example](./example)
-![procudin_example](https://user-images.githubusercontent.com/76070534/143766444-cbbab5f3-3939-418e-b786-5b2a4661c81b.png)
+![procudin_example](https://user-images.githubusercontent.com/76070534/146097840-de2f8c54-0cdd-4f90-8d07-5b62eadf4aca.png)
 
 ### Интерфейс
 Запуск осуществляется из командной строки со следующим форматом:
