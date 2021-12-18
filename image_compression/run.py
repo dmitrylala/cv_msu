@@ -7,7 +7,7 @@ from os.path import join
 from sys import argv, exit
 
 
-def run_single_test(data_dir, output_dir):
+def run_single_test(data_dir, out_dir):
     from pytest import main
     exit(main(['-vv', join(data_dir, 'test.py')]))
 
@@ -22,9 +22,9 @@ def grade(data_path):
     grade_mapping = [2, 1, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 1, 1, 0.5]
     total_grade = 0
     ok_count = 0
-    for result, grade in zip(results, grade_mapping):
+    for result, cur_grade in zip(results, grade_mapping):
         if result['status'] == 'Ok':
-            total_grade += grade
+            total_grade += cur_grade
             ok_count += 1
     total_count = len(results)
     description = '%02d/%02d' % (ok_count, total_count)
